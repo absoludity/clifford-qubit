@@ -3,13 +3,21 @@ name = "clifford-qubit"
 version = "0.1.0"
 edition = "2024"
 authors = ["Michael Nelson <absoludity@gmail.com>"]
-description = ""
+description = "A qubit implementation using Clifford algebra for quantum computing simulations"
 license = "MIT OR Apache-2.0"
 keywords = ["clifford", "qubit"]
 
 [dependencies]
 clifford-3-even = "0.1.1"
 num = "0.4.1"
+num-bigint = "0.4.3"
+rand = "0.8.5"
+ndarray = "0.15.6"
 
 [dev-dependencies]
 rstest = "0.18.2"
+
+[dependencies.quantum-sparse-sim]
+git = "https://github.com/qir-alliance/qir-runner.git"
+tag = "v0.7.6"
+package = "quantum-sparse-sim"
