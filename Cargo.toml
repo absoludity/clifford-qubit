@@ -7,6 +7,10 @@ description = "A qubit implementation using Clifford algebra for quantum computi
 license = "MIT OR Apache-2.0"
 keywords = ["clifford", "qubit"]
 
+[features]
+default = []
+optimized = []
+
 [dependencies]
 clifford-3-even = "0.1.1"
 num = "0.4.1"
