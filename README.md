@@ -8,16 +8,19 @@ A Rust library implementing quantum bits (qubits) using Clifford algebra.
 
 ## Overview
 
-`clifford-qubit` provides a mathematical representation of qubits using Clifford algebra, specifically the even subalgebra of the 3D Clifford algebra. This approach offers an elegant geometric interpretation of quantum operations.
+`clifford-qubit` provides a mathematical representation of qubits using Clifford
+algebra, specifically the even subalgebra of the 3D Clifford algebra. This
+approach enables thinking about quantum computing transformations geometrically.
 
-The library represents a qubit state |ψ⟩ = α|0⟩ + β|1⟩ using rotors from Clifford algebra, enabling efficient and intuitive implementation of quantum gates and operations.
+The library represents a qubit state |ψ⟩ = α|0⟩ + β|1⟩ using rotors from Clifford algebra.
 
 ## Features
 
-- Pure Rust implementation of qubits using Clifford algebra
-- Mathematically rigorous representation of quantum states
-- Implementation of fundamental quantum gates (Pauli gates)
-- Efficient conversion between complex coefficient and rotor representations
+- A reference implementation which uses the geometric product within the even
+subalgebra.
+- An optimised implementation (so far just for the Pauli gates) which is doing the equivalent of the Pauli matrices.
+- Starting to add infrastructure to be able to compare and test it with the qir-alliance's sparse sim, as it is used in qsharp.
+
 
 ## Usage
 
