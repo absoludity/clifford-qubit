@@ -2,6 +2,7 @@
 
 use clifford_3_even::Rotor;
 use num::complex::Complex64;
+use std::fmt;
 
 use crate::error::QubitError;
 
@@ -21,6 +22,12 @@ impl Default for Qubit {
     fn default() -> Self {
         Self::new(Complex64::new(1.0, 0.0), Complex64::new(0.0, 0.0))
             .expect("Default qubit creation should never fail")
+    }
+}
+
+impl fmt::Display for Qubit {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.rotor)
     }
 }
 
