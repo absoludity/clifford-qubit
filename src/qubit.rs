@@ -2,6 +2,30 @@
 
 use clifford_3_even::Rotor;
 use num::complex::Complex64;
+use std::fmt;
+
+/// Error type for qubit operations.
+#[derive(Debug, Clone, PartialEq)]
+pub enum QubitError {
+    /// The coefficients are not normalized (|α|² + |β|² ≠ 1)
+    NotNormalized { norm_squared: f64 },
+}
+
+impl fmt::Display for QubitError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            QubitError::NotNormalized { norm_squared } => {
+                write!(
+                    f,
+                    "Qubit coefficients are not normalized: |α|² + |β|² = {} (expected 1.0)",
+                    norm_squared
+                )
+            }
+        }
+    }
+}
+
+impl std::error::Error for QubitError {}
 
 /// Represents a quantum bit (qubit).
 ///
@@ -40,20 +64,18 @@ impl Qubit {
     ///
     /// # Returns
     ///
-    /// Some(Qubit) if the coefficients satisfy |α|² + |β|² = 1, None otherwise
+    /// Ok(Qubit) if the coefficients satisfy |α|² + |β|² = 1, Err(QubitError) otherwise
     #[must_use]
-    pub fn new(alpha: Complex64, beta: Complex64) -> Option<Self> {
+    pub fn new(alpha: Complex64, beta: Complex64) -> Result<Self, QubitError> {
         // Check normalization condition: |α|² + |β|² = 1
         let norm_squared = alpha.norm_sqr() + beta.norm_sqr();
         if (norm_squared - 1.0).abs() > 1e-10 {
-            return None;
+            return Err(QubitError::NotNormalized { norm_squared });
         }
 
-        println!("alpha: {alpha}, beta: {beta}");
         let rotor = Rotor::new(alpha.re, beta.im, -beta.re, alpha.im);
-        println!("rotor: {rotor}");
 
-        Some(Self { rotor })
+        Ok(Self { rotor })
     }
 
     /// Extracts the complex coefficients of the qubit state.
@@ -240,5 +262,21 @@ mod tests {
 
         assert!((alpha - expected_alpha).norm() < 1e-10);
         assert!((beta - expected_beta).norm() < 1e-10);
+    }
+
+    #[test]
+    fn test_new_method_unnormalized_coefficients() {
+        // Test with unnormalized coefficients
+        let alpha = Complex64::new(1.0, 0.0);
+        let beta = Complex64::new(1.0, 0.0); // |α|² + |β|² = 2, not 1
+
+        let result = Qubit::new(alpha, beta);
+        assert!(result.is_err());
+
+        if let Err(QubitError::NotNormalized { norm_squared }) = result {
+            assert!((norm_squared - 2.0).abs() < 1e-10);
+        } else {
+            panic!("Expected NotNormalized error");
+        }
     }
 }
