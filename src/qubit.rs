@@ -27,7 +27,95 @@ impl Default for Qubit {
 
 impl fmt::Display for Qubit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.rotor)
+        if f.alternate() {
+            // Display in Dirac notation: α|0⟩ + β|1⟩
+            let (alpha, beta) = self.complex_coefficients();
+
+            let mut has_terms = false;
+
+            // Handle the α|0⟩ term
+            if alpha.norm() > 1e-10 {
+                if alpha.im.abs() < 1e-10 {
+                    // Purely real coefficient
+                    if let Some(precision) = f.precision() {
+                        write!(f, "({:.prec$})|0⟩", alpha.re, prec = precision)?;
+                    } else {
+                        write!(f, "({})|0⟩", alpha.re)?;
+                    }
+                } else if alpha.re.abs() < 1e-10 {
+                    // Purely imaginary coefficient
+                    if let Some(precision) = f.precision() {
+                        write!(f, "({:.prec$}i)|0⟩", alpha.im, prec = precision)?;
+                    } else {
+                        write!(f, "({}i)|0⟩", alpha.im)?;
+                    }
+                } else {
+                    // Complex coefficient
+                    if let Some(precision) = f.precision() {
+                        write!(
+                            f,
+                            "({:.prec$}{:+.prec$}i)|0⟩",
+                            alpha.re,
+                            alpha.im,
+                            prec = precision
+                        )?;
+                    } else {
+                        write!(f, "({})|0⟩", alpha)?;
+                    }
+                }
+                has_terms = true;
+            }
+
+            // Handle the β|1⟩ term
+            if beta.norm() > 1e-10 {
+                if has_terms {
+                    write!(f, " + ")?;
+                }
+                if beta.im.abs() < 1e-10 {
+                    // Purely real coefficient
+                    if let Some(precision) = f.precision() {
+                        write!(f, "({:.prec$})|1⟩", beta.re, prec = precision)?;
+                    } else {
+                        write!(f, "({})|1⟩", beta.re)?;
+                    }
+                } else if beta.re.abs() < 1e-10 {
+                    // Purely imaginary coefficient
+                    if let Some(precision) = f.precision() {
+                        write!(f, "({:.prec$}i)|1⟩", beta.im, prec = precision)?;
+                    } else {
+                        write!(f, "({}i)|1⟩", beta.im)?;
+                    }
+                } else {
+                    // Complex coefficient
+                    if let Some(precision) = f.precision() {
+                        write!(
+                            f,
+                            "({:.prec$}{:+.prec$}i)|1⟩",
+                            beta.re,
+                            beta.im,
+                            prec = precision
+                        )?;
+                    } else {
+                        write!(f, "({})|1⟩", beta)?;
+                    }
+                }
+                has_terms = true;
+            }
+
+            // Handle the zero state case
+            if !has_terms {
+                write!(f, "0")?;
+            }
+
+            Ok(())
+        } else {
+            // Display as rotor (current behavior)
+            if let Some(precision) = f.precision() {
+                write!(f, "{:.prec$}", self.rotor, prec = precision)
+            } else {
+                write!(f, "{}", self.rotor)
+            }
+        }
     }
 }
 
@@ -296,5 +384,102 @@ mod tests {
         } else {
             panic!("Expected NotNormalized error");
         }
+    }
+
+    #[rstest]
+    #[case::zero_state(
+        Complex64::new(1.0, 0.0),
+        Complex64::new(0.0, 0.0),
+        "1",
+        "1.000",
+        "(1)|0⟩",
+        "(1.000)|0⟩"
+    )] // |0⟩ state
+    #[case::one_state(
+        Complex64::new(0.0, 0.0),
+        Complex64::new(1.0, 0.0),
+        "-1Iy",
+        "-1.000Iy",
+        "(1)|1⟩",
+        "(1.000)|1⟩"
+    )] // |1⟩ state
+    #[case::plus_state(
+        Complex64::new(FRAC_1_SQRT_2, 0.0),
+        Complex64::new(FRAC_1_SQRT_2, 0.0),
+        "0.7071067811865476 - 0.7071067811865476Iy",
+        "0.707 - 0.707Iy",
+        "(0.7071067811865476)|0⟩ + (0.7071067811865476)|1⟩",
+        "(0.707)|0⟩ + (0.707)|1⟩"
+    )] // |+⟩ state
+    #[case::minus_state(
+        Complex64::new(FRAC_1_SQRT_2, 0.0),
+        Complex64::new(-FRAC_1_SQRT_2, 0.0),
+        "0.7071067811865476 + 0.7071067811865476Iy",
+        "0.707 + 0.707Iy",
+        "(0.7071067811865476)|0⟩ + (-0.7071067811865476)|1⟩",
+        "(0.707)|0⟩ + (-0.707)|1⟩"
+    )] // |-⟩ state
+    #[case::plus_i_state(
+        Complex64::new(FRAC_1_SQRT_2, 0.0),
+        Complex64::new(0.0, FRAC_1_SQRT_2),
+        "0.7071067811865476 + 0.7071067811865476Ix",
+        "0.707 + 0.707Ix",
+        "(0.7071067811865476)|0⟩ + (0.7071067811865476i)|1⟩",
+        "(0.707)|0⟩ + (0.707i)|1⟩"
+    )] // |+i⟩ state
+    #[case::complex_state(
+        Complex64::new(0.5, 0.5),
+        Complex64::new(0.5, -0.5),
+        "0.5 - 0.5Ix - 0.5Iy + 0.5Iz",
+        "0.500 - 0.500Ix - 0.500Iy + 0.500Iz",
+        "(0.5+0.5i)|0⟩ + (0.5-0.5i)|1⟩",
+        "(0.500+0.500i)|0⟩ + (0.500-0.500i)|1⟩"
+    )] // Complex coefficients state
+    fn test_display_formats(
+        #[case] alpha: Complex64,
+        #[case] beta: Complex64,
+        #[case] expected_rotor: &str,
+        #[case] expected_rotor_precision: &str,
+        #[case] expected_dirac: &str,
+        #[case] expected_dirac_precision: &str,
+    ) {
+        let qubit = Qubit::new(alpha, beta).unwrap();
+
+        // Test rotor format (default)
+        assert_eq!(format!("{}", qubit), expected_rotor);
+
+        // Test rotor format with 3 decimal places
+        assert_eq!(format!("{:.3}", qubit), expected_rotor_precision);
+
+        // Test Dirac format (alternate) without precision
+        assert_eq!(format!("{:#}", qubit), expected_dirac);
+
+        // Test Dirac format (alternate) with 3 decimal places
+        assert_eq!(format!("{:#.3}", qubit), expected_dirac_precision);
+    }
+
+    #[test]
+    fn test_precision_behavior() {
+        let qubit = Qubit::new(
+            Complex64::new(FRAC_1_SQRT_2, 0.0),
+            Complex64::new(FRAC_1_SQRT_2, 0.0),
+        )
+        .unwrap();
+
+        // Test rotor format precision
+        assert_eq!(
+            format!("{}", qubit),
+            "0.7071067811865476 - 0.7071067811865476Iy"
+        );
+        assert_eq!(format!("{:.2}", qubit), "0.71 - 0.71Iy");
+        assert_eq!(format!("{:.4}", qubit), "0.7071 - 0.7071Iy");
+
+        // Test Dirac format precision
+        assert_eq!(
+            format!("{:#}", qubit),
+            "(0.7071067811865476)|0⟩ + (0.7071067811865476)|1⟩"
+        );
+        assert_eq!(format!("{:#.2}", qubit), "(0.71)|0⟩ + (0.71)|1⟩");
+        assert_eq!(format!("{:#.4}", qubit), "(0.7071)|0⟩ + (0.7071)|1⟩");
     }
 }
