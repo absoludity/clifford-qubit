@@ -3,6 +3,8 @@
 use clifford_3_even::Rotor;
 use num::complex::Complex64;
 
+use crate::error::QubitError;
+
 /// Represents a quantum bit (qubit).
 ///
 /// A qubit is represented by two complex coefficients α and β such that:
@@ -40,20 +42,18 @@ impl Qubit {
     ///
     /// # Returns
     ///
-    /// Some(Qubit) if the coefficients satisfy |α|² + |β|² = 1, None otherwise
+    /// Ok(Qubit) if the coefficients satisfy |α|² + |β|² = 1, Err(QubitError) otherwise
     #[must_use]
-    pub fn new(alpha: Complex64, beta: Complex64) -> Option<Self> {
+    pub fn new(alpha: Complex64, beta: Complex64) -> Result<Self, QubitError> {
         // Check normalization condition: |α|² + |β|² = 1
         let norm_squared = alpha.norm_sqr() + beta.norm_sqr();
         if (norm_squared - 1.0).abs() > 1e-10 {
-            return None;
+            return Err(QubitError::NotNormalized { norm_squared });
         }
 
-        println!("alpha: {alpha}, beta: {beta}");
         let rotor = Rotor::new(alpha.re, beta.im, -beta.re, alpha.im);
-        println!("rotor: {rotor}");
 
-        Some(Self { rotor })
+        Ok(Self { rotor })
     }
 
     /// Extracts the complex coefficients of the qubit state.
@@ -80,10 +80,16 @@ impl Qubit {
     ///
     /// # Returns
     ///
-    /// A new qubit with the given rotor
+    /// Ok(Qubit) if the rotor is normalized, Err(QubitError) otherwise
     #[must_use]
-    pub fn from_rotor(rotor: Rotor) -> Self {
-        Self { rotor }
+    pub fn from_rotor(rotor: Rotor) -> Result<Self, QubitError> {
+        // Check normalization condition: |rotor|² = 1
+        let norm_squared = rotor.magnitude_squared();
+        if (norm_squared - 1.0).abs() > 1e-10 {
+            return Err(QubitError::NotNormalized { norm_squared });
+        }
+
+        Ok(Self { rotor })
     }
 
     /// Returns the rotor representation of the qubit.
@@ -240,5 +246,48 @@ mod tests {
 
         assert!((alpha - expected_alpha).norm() < 1e-10);
         assert!((beta - expected_beta).norm() < 1e-10);
+    }
+
+    #[test]
+    fn test_new_method_unnormalized_coefficients() {
+        // Test with unnormalized coefficients
+        let alpha = Complex64::new(1.0, 0.0);
+        let beta = Complex64::new(1.0, 0.0); // |α|² + |β|² = 2, not 1
+
+        let result = Qubit::new(alpha, beta);
+        assert!(result.is_err());
+
+        if let Err(QubitError::NotNormalized { norm_squared }) = result {
+            assert!((norm_squared - 2.0).abs() < 1e-10);
+        } else {
+            panic!("Expected NotNormalized error");
+        }
+    }
+
+    #[rstest]
+    #[case::zero_state(Rotor::new(1.0, 0.0, 0.0, 0.0))] // |0⟩ state
+    #[case::one_state(Rotor::new(0.0, 0.0, -1.0, 0.0))] // |1⟩ state
+    #[case::plus_state(Rotor::new(FRAC_1_SQRT_2, 0.0, -FRAC_1_SQRT_2, 0.0))] // |+⟩ state
+    #[case::minus_state(Rotor::new(FRAC_1_SQRT_2, 0.0, FRAC_1_SQRT_2, 0.0))] // |-⟩ state
+    fn test_from_rotor_normalized(#[case] rotor: Rotor) {
+        let result = Qubit::from_rotor(rotor);
+        assert!(result.is_ok());
+        let qubit = result.unwrap();
+        assert!(qubit.rotor.approx_eq(&rotor, 1e-10));
+    }
+
+    #[test]
+    fn test_from_rotor_unnormalized() {
+        // Test with unnormalized rotor
+        let unnormalized_rotor = Rotor::new(2.0, 0.0, 0.0, 0.0); // |rotor|² = 4, not 1
+
+        let result = Qubit::from_rotor(unnormalized_rotor);
+        assert!(result.is_err());
+
+        if let Err(QubitError::NotNormalized { norm_squared }) = result {
+            assert!((norm_squared - 4.0).abs() < 1e-10);
+        } else {
+            panic!("Expected NotNormalized error");
+        }
     }
 }
