@@ -5,7 +5,7 @@ edition = "2024"
 authors = ["Michael Nelson <absoludity@gmail.com>"]
 description = "A qubit implementation using Clifford algebra for quantum computing simulations"
 license = "MIT OR Apache-2.0"
-keywords = ["clifford", "qubit"]
+keywords = ["clifford", "qubit", "quantum"]
 
 [features]
 default = []
@@ -13,7 +13,7 @@ optimized = []
 dev-tools = []
 
 [dependencies]
-clifford-3-even = "0.1.1"
+clifford-3-even = { path = "../clifford-3-even", version = "0.1.2" }
 num = "0.4.1"
 num-bigint = "0.4.3"
 rand = "0.8.5"
