@@ -27,29 +27,20 @@ fn format_rotor(qubit: &Qubit, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 /// Formats the qubit in Dirac notation with optional precision.
 fn format_dirac(qubit: &Qubit, f: &mut fmt::Formatter<'_>) -> fmt::Result {
     let (alpha, beta) = qubit.complex_coefficients();
-    let mut has_terms = false;
 
-    // Handle the α|0⟩ term
-    if alpha.norm() > 1e-10 {
-        format_coefficient(alpha, "|0⟩", f)?;
-        has_terms = true;
-    }
+    let has_alpha = alpha.norm() > 1e-10;
+    let has_beta = beta.norm() > 1e-10;
 
-    // Handle the β|1⟩ term
-    if beta.norm() > 1e-10 {
-        if has_terms {
+    match (has_alpha, has_beta) {
+        (true, true) => {
+            format_coefficient(alpha, "|0⟩", f)?;
             write!(f, " + ")?;
+            format_coefficient(beta, "|1⟩", f)
         }
-        format_coefficient(beta, "|1⟩", f)?;
-        has_terms = true;
+        (true, false) => format_coefficient(alpha, "|0⟩", f),
+        (false, true) => format_coefficient(beta, "|1⟩", f),
+        (false, false) => write!(f, "0"),
     }
-
-    // Handle the zero state case
-    if !has_terms {
-        write!(f, "0")?;
-    }
-
-    Ok(())
 }
 
 /// Formats a complex coefficient with the given state label.
@@ -84,7 +75,7 @@ fn format_coefficient(
                 prec = precision
             )
         } else {
-            write!(f, "({}){}", coeff, state)
+            write!(f, "({coeff}){state}")
         }
     }
 }

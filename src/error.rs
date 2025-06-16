@@ -12,11 +12,10 @@ pub enum QubitError {
 impl fmt::Display for QubitError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            QubitError::NotNormalized { norm_squared } => {
+            Self::NotNormalized { norm_squared } => {
                 write!(
                     f,
-                    "Qubit coefficients are not normalized: |α|² + |β|² = {} (expected 1.0)",
-                    norm_squared
+                    "Qubit coefficients are not normalized: |α|² + |β|² = {norm_squared} (expected 1.0)"
                 )
             }
         }
