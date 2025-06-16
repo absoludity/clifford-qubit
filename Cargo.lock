@@ -32,6 +32,8 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 [[package]]
 name = "clifford-3-even"
 version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14814294666d685dff32c6aa3645d8b8d9152a6c112837dcd71db905e81388b9"
 
 [[package]]
 name = "clifford-qubit"
