@@ -33,17 +33,20 @@ impl Qubit {
     /// * `beta` - Complex coefficient for the |1⟩ state
     ///
     /// where
-    /// a_0 = α₀,
-    /// a_z = α₁
-    /// a_y = -β₀
-    /// a_x = β₁
+    /// `a_0` = α₀,
+    /// `a_z` = α₁
+    /// `a_y` = -β₀
+    /// `a_x` = β₁
     /// according to the normal map of quantum complex coefficients to
     /// the Cl(3) even sub-algebra (link to Doran etc.)
     ///
     /// # Returns
     ///
     /// Ok(Qubit) if the coefficients satisfy |α|² + |β|² = 1, Err(QubitError) otherwise
-    #[must_use]
+    ///
+    /// # Errors
+    ///
+    /// Returns `QubitError::NotNormalized` if the coefficients are not normalized
     pub fn new(alpha: Complex64, beta: Complex64) -> Result<Self, QubitError> {
         // Check normalization condition: |α|² + |β|² = 1
         let norm_squared = alpha.norm_sqr() + beta.norm_sqr();
@@ -81,7 +84,10 @@ impl Qubit {
     /// # Returns
     ///
     /// Ok(Qubit) if the rotor is normalized, Err(QubitError) otherwise
-    #[must_use]
+    ///
+    /// # Errors
+    ///
+    /// Returns `QubitError::NotNormalized` if the rotor is not normalized
     pub fn from_rotor(rotor: Rotor) -> Result<Self, QubitError> {
         // Check normalization condition: |rotor|² = 1
         let norm_squared = rotor.magnitude_squared();
@@ -98,7 +104,7 @@ impl Qubit {
     ///
     /// The rotor representing this qubit
     #[must_use]
-    pub fn rotor(&self) -> Rotor {
+    pub const fn rotor(&self) -> Rotor {
         self.rotor
     }
 

@@ -22,7 +22,7 @@ impl QubitArray {
     ///
     /// An empty `QubitArray`
     #[must_use]
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             qubits: Vec::new(),
             coefficient: 1.0,
@@ -56,7 +56,7 @@ impl QubitArray {
     ///
     /// A `QubitArray` containing the provided qubits
     #[must_use]
-    pub fn from_qubits(qubits: Vec<Qubit>) -> Self {
+    pub const fn from_qubits(qubits: Vec<Qubit>) -> Self {
         Self {
             qubits,
             coefficient: 1.0,
@@ -143,7 +143,7 @@ impl QubitArray {
     ///
     /// The coefficient as an f64
     #[must_use]
-    pub fn coefficient(&self) -> f64 {
+    pub const fn coefficient(&self) -> f64 {
         self.coefficient
     }
 
@@ -156,17 +156,18 @@ impl QubitArray {
     /// # Returns
     ///
     /// `Ok(())` if successful, or an error if the index is out of bounds
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the index is out of bounds
     pub fn x(&mut self, index: usize) -> Result<(), String> {
-        if let Some(qubit) = self.qubits.get_mut(index) {
-            qubit.x();
-            Ok(())
-        } else {
-            Err(format!(
-                "Index {} is out of bounds for array of length {}",
-                index,
-                self.len()
-            ))
-        }
+        self.qubits.get_mut(index).map_or_else(
+            || Err(format!("Index {index} is out of bounds")),
+            |qubit| {
+                qubit.x();
+                Ok(())
+            },
+        )
     }
 
     /// Applies the Pauli Y gate to the qubit at the specified index.
@@ -178,17 +179,18 @@ impl QubitArray {
     /// # Returns
     ///
     /// `Ok(())` if successful, or an error if the index is out of bounds
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the index is out of bounds
     pub fn y(&mut self, index: usize) -> Result<(), String> {
-        if let Some(qubit) = self.qubits.get_mut(index) {
-            qubit.y();
-            Ok(())
-        } else {
-            Err(format!(
-                "Index {} is out of bounds for array of length {}",
-                index,
-                self.len()
-            ))
-        }
+        self.qubits.get_mut(index).map_or_else(
+            || Err(format!("Index {index} is out of bounds")),
+            |qubit| {
+                qubit.y();
+                Ok(())
+            },
+        )
     }
 
     /// Applies the Pauli Z gate to the qubit at the specified index.
@@ -200,17 +202,18 @@ impl QubitArray {
     /// # Returns
     ///
     /// `Ok(())` if successful, or an error if the index is out of bounds
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the index is out of bounds
     pub fn z(&mut self, index: usize) -> Result<(), String> {
-        if let Some(qubit) = self.qubits.get_mut(index) {
-            qubit.z();
-            Ok(())
-        } else {
-            Err(format!(
-                "Index {} is out of bounds for array of length {}",
-                index,
-                self.len()
-            ))
-        }
+        self.qubits.get_mut(index).map_or_else(
+            || Err(format!("Index {index} is out of bounds")),
+            |qubit| {
+                qubit.z();
+                Ok(())
+            },
+        )
     }
 
     /// Converts the qubit array to a vector of qubits.
@@ -236,7 +239,7 @@ impl Default for QubitArray {
 impl fmt::Display for QubitArray {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.coefficient)?;
-        for qubit in self.qubits.iter() {
+        for qubit in &self.qubits {
             write!(f, "({})", qubit.rotor())?;
         }
         Ok(())

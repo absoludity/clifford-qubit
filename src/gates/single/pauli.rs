@@ -16,7 +16,7 @@ use clifford_3_even::{Ix, Iy, Iz};
 /// X|0⟩ = |1⟩ and X|1⟩ = |0⟩, or more generally,
 /// X|(α β)⟩ = |(β α)⟩
 ///
-/// Mathematically, this is implemented as Ix.reverse() * q * Iz
+/// Mathematically, this is implemented as `Ix.reverse()` * q * Iz
 /// where q is the input qubit's rotor, which results in the same
 /// switching of the coefficients when using the chosen mapping of
 /// the rotor to the complex coefficients:
@@ -81,7 +81,7 @@ pub fn x(qubit: &mut Qubit) -> &mut Qubit {
 /// Y|0⟩ = i|1⟩ and Y|1⟩ = -i|0⟩, or more generally,
 /// Y|(α β)⟩ = |(-iβ iα)⟩
 ///
-/// Mathematically, this is implemented as Iy.reverse() * q * Iz
+/// Mathematically, this is implemented as `Iy.reverse()` * q * Iz
 /// where q is the input qubit's rotor which results in the same
 /// transformation of the coefficients:
 ///
@@ -143,7 +143,7 @@ pub fn y(qubit: &mut Qubit) -> &mut Qubit {
 /// The Pauli Z gate is a rotation around the Z-axis:
 /// Z|0⟩ = |0⟩ and Z|1⟩ = -|1⟩
 ///
-/// Mathematically, this is implemented as Iz.reverse() * q * Iz
+/// Mathematically, this is implemented as `Iz.reverse()` * q * Iz
 /// where q is the input qubit's rotor which results in the same
 /// transformation of the coefficients:
 ///
