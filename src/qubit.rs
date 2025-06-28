@@ -191,6 +191,28 @@ impl Qubit {
         )
         .unwrap()
     }
+
+    /// Measure the qubit with respect to the +1 eigenstate of Z
+    ///
+    /// Returns the real amplitude and the normalized projection of the qubit onto the +1 eigenstate of Z
+    ///
+    /// # Returns
+    ///
+    /// An `f64` corresponding to the probability and a qubit if the amplitude is non-zero.
+    fn measure_z_plus(&self) -> (f64, Option<Qubit>) {
+        // This could also be optimized by just zero'ing the Ix and Iy co-efficients.
+        let mut rotor =
+            0.5f64 * (self.rotor + crate::gates::single::pauli::z(&mut self.clone()).rotor);
+        let amplitude = rotor.normalize();
+
+        let qubit = if amplitude.abs() < 1e-10 {
+            None
+        } else {
+            Some(Qubit::from_rotor(rotor).unwrap())
+        };
+
+        (amplitude, qubit)
+    }
 }
 
 #[cfg(test)]
@@ -346,5 +368,45 @@ mod tests {
         // One state should be |1⟩ = (0, 1)
         assert!((alpha - Complex64::new(0.0, 0.0)).norm() < 1e-10);
         assert!((beta - Complex64::new(1.0, 0.0)).norm() < 1e-10);
+    }
+
+    #[rstest]
+    #[case::zero_state(
+        Rotor::new(1.0, 0.0, 0.0, 0.0),
+        1.0,
+        Some(Rotor::new(1.0, 0.0, 0.0, 0.0))
+    )] // |0⟩ state
+    #[case::one_state(Rotor::new(0.0, 0.0, -1.0, 0.0), 0.0, None)] // |1⟩ state
+    #[case::plus_state(Rotor::new(FRAC_1_SQRT_2, 0.0, -FRAC_1_SQRT_2, 0.0), FRAC_1_SQRT_2, Some(Rotor::new(1.0, 0.0, 0.0, 0.0)))] // |+⟩ state
+    #[case::minus_state(
+        Rotor::new(FRAC_1_SQRT_2, 0.0, FRAC_1_SQRT_2, 0.0),
+        FRAC_1_SQRT_2,
+        Some(Rotor::new(1.0, 0.0, 0.0, 0.0))
+    )] // |-⟩ state
+    #[case::plus_state_with_phase(Rotor::new(0.5, 0.5, -0.5, 0.5), FRAC_1_SQRT_2, Some(Rotor::new(FRAC_1_SQRT_2, 0.0, 0.0, FRAC_1_SQRT_2)))] // |+⟩ state
+    fn test_measure_z_plus(
+        #[case] rotor: Rotor,
+        #[case] amplitude: f64,
+        #[case] result_rotor: Option<Rotor>,
+    ) {
+        let qubit = Qubit::from_rotor(rotor).unwrap();
+        let (measured_amplitude, measured_state) = qubit.measure_z_plus();
+        assert!(
+            (measured_amplitude - amplitude).abs() < 1e-10,
+            "{measured_amplitude} != {amplitude}"
+        );
+
+        let result_state = result_rotor.map(|r| Qubit::from_rotor(r).unwrap());
+        match result_state {
+            Some(expected_state) => {
+                assert!(measured_state.is_some());
+                let measured = measured_state.unwrap();
+                assert!(
+                    measured.approx_eq(&expected_state, 1e-10),
+                    "{measured} != {expected_state}"
+                )
+            }
+            None => assert!(measured_state.is_none()),
+        }
     }
 }
