@@ -200,9 +200,15 @@ impl Qubit {
     ///
     /// A rotor representing the projection of the qubit onto the +1 eigenstate of Z
     fn project_z_plus(&self) -> Rotor {
-        0.5f64 * (self.rotor + crate::gates::single::pauli::z(&mut self.clone()).rotor)
-        // Optimization that only applies to the Z-gate:
-        // Rotor::new(self.rotor.scalar, 0.0, 0.0, self.rotor.iz)
+        #[cfg(feature = "optimized")]
+        {
+            // Optimization that only applies to the Z-gate:
+            Rotor::new(self.rotor.scalar, 0.0, 0.0, self.rotor.iz)
+        }
+        #[cfg(not(feature = "optimized"))]
+        {
+            0.5f64 * (self.rotor + crate::gates::single::pauli::z(&mut self.clone()).rotor)
+        }
     }
 
     /// Project the qubit with respect to the -1 eigenstate of Z
@@ -213,7 +219,15 @@ impl Qubit {
     ///
     /// A rotor representing the projection of the qubit onto the -1 eigenstate of Z
     fn project_z_minus(&self) -> Rotor {
-        0.5f64 * (self.rotor - crate::gates::single::pauli::z(&mut self.clone()).rotor)
+        #[cfg(feature = "optimized")]
+        {
+            // Optimization that only applies to the Z-gate:
+            Rotor::new(0.0, self.rotor.ix, self.rotor.iy, 0.0)
+        }
+        #[cfg(not(feature = "optimized"))]
+        {
+            0.5f64 * (self.rotor - crate::gates::single::pauli::z(&mut self.clone()).rotor)
+        }
     }
 
     /// Project the qubit with respect to the +1 eigenstate of X
@@ -438,6 +452,10 @@ mod tests {
         Rotor::new(FRAC_1_SQRT_2, 0.0, FRAC_1_SQRT_2, 0.0),
         Rotor::new(0.0, 0.0, FRAC_1_SQRT_2, 0.0)
     )] // |-⟩ state
+    #[case::plus_state_with_phase(
+        Rotor::new(0.5, 0.5, -0.5, 0.5),
+        Rotor::new(0.0, 0.5, -0.5, 0.0)
+    )] // |+⟩ state with phase
     fn test_project_z_minus(#[case] rotor: Rotor, #[case] expected_rotor: Rotor) {
         let qubit = Qubit::from_rotor(rotor).unwrap();
         let projected_rotor = qubit.project_z_minus();
