@@ -204,6 +204,39 @@ impl Qubit {
         // Optimization that only applies to the Z-gate:
         // Rotor::new(self.rotor.scalar, 0.0, 0.0, self.rotor.iz)
     }
+
+    /// Project the qubit with respect to the -1 eigenstate of Z
+    ///
+    /// Returns the rotor projection of the qubit onto the -1 eigenstate of Z
+    ///
+    /// # Returns
+    ///
+    /// A rotor representing the projection of the qubit onto the -1 eigenstate of Z
+    fn project_z_minus(&self) -> Rotor {
+        0.5f64 * (self.rotor - crate::gates::single::pauli::z(&mut self.clone()).rotor)
+    }
+
+    /// Project the qubit with respect to the +1 eigenstate of X
+    ///
+    /// Returns the rotor projection of the qubit onto the +1 eigenstate of X
+    ///
+    /// # Returns
+    ///
+    /// A rotor representing the projection of the qubit onto the +1 eigenstate of X
+    fn project_x_plus(&self) -> Rotor {
+        0.5f64 * (self.rotor + crate::gates::single::pauli::x(&mut self.clone()).rotor)
+    }
+
+    /// Project the qubit with respect to the -1 eigenstate of X
+    ///
+    /// Returns the rotor projection of the qubit onto the -1 eigenstate of X
+    ///
+    /// # Returns
+    ///
+    /// A rotor representing the projection of the qubit onto the -1 eigenstate of X
+    fn project_x_minus(&self) -> Rotor {
+        0.5f64 * (self.rotor - crate::gates::single::pauli::x(&mut self.clone()).rotor)
+    }
 }
 
 #[cfg(test)]
@@ -382,6 +415,84 @@ mod tests {
     fn test_project_z_plus(#[case] rotor: Rotor, #[case] expected_rotor: Rotor) {
         let qubit = Qubit::from_rotor(rotor).unwrap();
         let projected_rotor = qubit.project_z_plus();
+
+        assert!(
+            projected_rotor.approx_eq(&expected_rotor, 1e-10),
+            "Expected: {:?}, Got: {:?}",
+            expected_rotor,
+            projected_rotor
+        );
+    }
+
+    #[rstest]
+    #[case::zero_state(Rotor::new(1.0, 0.0, 0.0, 0.0), Rotor::new(0.0, 0.0, 0.0, 0.0))] // |0⟩ state
+    #[case::one_state(
+        Rotor::new(0.0, 0.0, -1.0, 0.0),
+        Rotor::new(0.0, 0.0, -1.0, 0.0)
+    )] // |1⟩ state
+    #[case::plus_state(
+        Rotor::new(FRAC_1_SQRT_2, 0.0, -FRAC_1_SQRT_2, 0.0),
+        Rotor::new(0.0, 0.0, -FRAC_1_SQRT_2, 0.0)
+    )] // |+⟩ state
+    #[case::minus_state(
+        Rotor::new(FRAC_1_SQRT_2, 0.0, FRAC_1_SQRT_2, 0.0),
+        Rotor::new(0.0, 0.0, FRAC_1_SQRT_2, 0.0)
+    )] // |-⟩ state
+    fn test_project_z_minus(#[case] rotor: Rotor, #[case] expected_rotor: Rotor) {
+        let qubit = Qubit::from_rotor(rotor).unwrap();
+        let projected_rotor = qubit.project_z_minus();
+
+        assert!(
+            projected_rotor.approx_eq(&expected_rotor, 1e-10),
+            "Expected: {:?}, Got: {:?}",
+            expected_rotor,
+            projected_rotor
+        );
+    }
+
+    #[rstest]
+    #[case::zero_state(Rotor::new(1.0, 0.0, 0.0, 0.0), Rotor::new(0.5, 0.0, -0.5, 0.0))] // |0⟩ state
+    #[case::one_state(
+        Rotor::new(0.0, 0.0, -1.0, 0.0),
+        Rotor::new(0.5, 0.0, -0.5, 0.0)
+    )] // |1⟩ state
+    #[case::plus_state(
+        Rotor::new(FRAC_1_SQRT_2, 0.0, -FRAC_1_SQRT_2, 0.0),
+        Rotor::new(FRAC_1_SQRT_2, 0.0, -FRAC_1_SQRT_2, 0.0)
+    )] // |+⟩ state
+    #[case::minus_state(
+        Rotor::new(FRAC_1_SQRT_2, 0.0, FRAC_1_SQRT_2, 0.0),
+        Rotor::new(0.0, 0.0, 0.0, 0.0)
+    )] // |-⟩ state
+    fn test_project_x_plus(#[case] rotor: Rotor, #[case] expected_rotor: Rotor) {
+        let qubit = Qubit::from_rotor(rotor).unwrap();
+        let projected_rotor = qubit.project_x_plus();
+
+        assert!(
+            projected_rotor.approx_eq(&expected_rotor, 1e-10),
+            "Expected: {:?}, Got: {:?}",
+            expected_rotor,
+            projected_rotor
+        );
+    }
+
+    #[rstest]
+    #[case::zero_state(Rotor::new(1.0, 0.0, 0.0, 0.0), Rotor::new(0.5, 0.0, 0.5, 0.0))] // |0⟩ state
+    #[case::one_state(
+        Rotor::new(0.0, 0.0, -1.0, 0.0),
+        Rotor::new(-0.5, 0.0, -0.5, 0.0)
+    )] // |1⟩ state
+    #[case::plus_state(
+        Rotor::new(FRAC_1_SQRT_2, 0.0, -FRAC_1_SQRT_2, 0.0),
+        Rotor::new(0.0, 0.0, 0.0, 0.0)
+    )] // |+⟩ state
+    #[case::minus_state(
+        Rotor::new(FRAC_1_SQRT_2, 0.0, FRAC_1_SQRT_2, 0.0),
+        Rotor::new(FRAC_1_SQRT_2, 0.0, FRAC_1_SQRT_2, 0.0)
+    )] // |-⟩ state
+    fn test_project_x_minus(#[case] rotor: Rotor, #[case] expected_rotor: Rotor) {
+        let qubit = Qubit::from_rotor(rotor).unwrap();
+        let projected_rotor = qubit.project_x_minus();
 
         assert!(
             projected_rotor.approx_eq(&expected_rotor, 1e-10),
