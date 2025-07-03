@@ -16,19 +16,6 @@ dev-tools = []
 [dependencies]
 clifford-3-even = "0.1.2"
 num = "0.4.1"
-num-bigint = "0.4.3"
-rand = "0.8.5"
-ndarray = "0.15.6"
 
 [dev-dependencies]
 rstest = "0.18.2"
-
-[dev-dependencies.quantum-sparse-sim]
-git = "https://github.com/qir-alliance/qir-runner.git"
-tag = "v0.7.6"
-package = "quantum-sparse-sim"
-
-[dev-dependencies.qsc-eval]
-git = "https://github.com/microsoft/qsharp.git"
-tag = "v1.17.0"
-package = "qsc_eval"
