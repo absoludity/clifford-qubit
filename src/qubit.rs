@@ -137,7 +137,7 @@ impl Qubit {
     ///
     /// A mutable reference to self for method chaining
     pub fn x(&mut self) -> &mut Self {
-        crate::gates::single::pauli::x(self)
+        crate::gates::single::x(self)
     }
 
     /// Applies the Pauli Y gate to this qubit, modifying it in place.
@@ -149,7 +149,7 @@ impl Qubit {
     ///
     /// A mutable reference to self for method chaining
     pub fn y(&mut self) -> &mut Self {
-        crate::gates::single::pauli::y(self)
+        crate::gates::single::y(self)
     }
 
     /// Applies the Pauli Z gate to this qubit, modifying it in place.
@@ -161,7 +161,19 @@ impl Qubit {
     ///
     /// A mutable reference to self for method chaining
     pub fn z(&mut self) -> &mut Self {
-        crate::gates::single::pauli::z(self)
+        crate::gates::single::z(self)
+    }
+
+    /// Applies the Hadamard gate to this qubit, modifying it in place.
+    ///
+    /// The Hadamard gate creates superposition states:
+    /// H|0⟩ = (|0⟩ + |1⟩)/√2 = |+⟩ and H|1⟩ = (|0⟩ - |1⟩)/√2 = |-⟩
+    ///
+    /// # Returns
+    ///
+    /// A mutable reference to self for method chaining
+    pub fn hadamard(&mut self) -> &mut Self {
+        crate::gates::single::hadamard(self)
     }
 
     /// Creates a qubit representing the zero state
@@ -199,7 +211,7 @@ impl Qubit {
     /// # Returns
     ///
     /// A rotor representing the projection of the qubit onto the +1 eigenstate of Z
-    fn project_z_plus(&self) -> Rotor {
+    pub fn project_z_plus(&self) -> Rotor {
         #[cfg(feature = "optimized")]
         {
             // Optimization that only applies to the Z-gate:
@@ -218,7 +230,7 @@ impl Qubit {
     /// # Returns
     ///
     /// A rotor representing the projection of the qubit onto the -1 eigenstate of Z
-    fn project_z_minus(&self) -> Rotor {
+    pub fn project_z_minus(&self) -> Rotor {
         #[cfg(feature = "optimized")]
         {
             // Optimization that only applies to the Z-gate:
@@ -237,7 +249,7 @@ impl Qubit {
     /// # Returns
     ///
     /// A rotor representing the projection of the qubit onto the +1 eigenstate of X
-    fn project_x_plus(&self) -> Rotor {
+    pub fn project_x_plus(&self) -> Rotor {
         0.5f64 * (self.rotor + crate::gates::single::pauli::x(&mut self.clone()).rotor)
     }
 
@@ -248,7 +260,7 @@ impl Qubit {
     /// # Returns
     ///
     /// A rotor representing the projection of the qubit onto the -1 eigenstate of X
-    fn project_x_minus(&self) -> Rotor {
+    pub fn project_x_minus(&self) -> Rotor {
         0.5f64 * (self.rotor - crate::gates::single::pauli::x(&mut self.clone()).rotor)
     }
 }
