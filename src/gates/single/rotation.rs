@@ -88,7 +88,7 @@ pub fn rz(qubit: &mut Qubit, theta: f64) -> &mut Qubit {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::gates::test_helpers::assert_matrix_result;
+    use crate::gates::matrix_testing::assert_matrix_result;
     use num::complex::Complex64;
     use num::complex::ComplexFloat;
     use rstest::rstest;
@@ -134,7 +134,7 @@ mod tests {
         let (alpha_out, beta_out) = expected_coeffs;
 
         assert_matrix_result(input_coeffs, expected_coeffs, || {
-            crate::gates::matrix_operations::rx(theta)
+            crate::gates::matrix_testing::rx(theta)
         });
 
         let mut qubit = Qubit::new(alpha_in, beta_in).unwrap();
@@ -190,7 +190,7 @@ mod tests {
         let (alpha_out, beta_out) = expected_coeffs;
 
         assert_matrix_result(input_coeffs, expected_coeffs, || {
-            crate::gates::matrix_operations::ry(theta)
+            crate::gates::matrix_testing::ry(theta)
         });
 
         let mut qubit = Qubit::new(alpha_in, beta_in).unwrap();
@@ -261,7 +261,7 @@ mod tests {
         let (alpha_out, beta_out) = expected_coeffs;
 
         assert_matrix_result(input_coeffs, expected_coeffs, || {
-            crate::gates::matrix_operations::rz(theta)
+            crate::gates::matrix_testing::rz(theta)
         });
 
         let mut qubit = Qubit::new(alpha_in, beta_in).unwrap();
