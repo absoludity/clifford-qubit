@@ -203,6 +203,7 @@ pub fn z(qubit: &mut Qubit) -> &mut Qubit {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::gates::test_helpers::assert_matrix_result;
     use num::complex::Complex64;
     use num::complex::ComplexFloat;
     use rstest::rstest;
@@ -237,6 +238,11 @@ mod tests {
         #[case] input_coeffs: (Complex64, Complex64),
         #[case] expected_coeffs: (Complex64, Complex64),
     ) {
+        // Verify against matrix operations first to validate expected output
+        assert_matrix_result(input_coeffs, expected_coeffs, || {
+            crate::gates::matrix_operations::x()
+        });
+
         let (alpha_in, beta_in) = input_coeffs;
         let (alpha_out, beta_out) = expected_coeffs;
 
@@ -292,6 +298,11 @@ mod tests {
         #[case] input_coeffs: (Complex64, Complex64),
         #[case] expected_coeffs: (Complex64, Complex64),
     ) {
+        // Verify against matrix operations first to validate expected output
+        assert_matrix_result(input_coeffs, expected_coeffs, || {
+            crate::gates::matrix_operations::y()
+        });
+
         let (alpha_in, beta_in) = input_coeffs;
         let (alpha_out, beta_out) = expected_coeffs;
 
@@ -347,6 +358,11 @@ mod tests {
         #[case] input_coeffs: (Complex64, Complex64),
         #[case] expected_coeffs: (Complex64, Complex64),
     ) {
+        // Verify against matrix operations first to validate expected output
+        assert_matrix_result(input_coeffs, expected_coeffs, || {
+            crate::gates::matrix_operations::z()
+        });
+
         let (alpha_in, beta_in) = input_coeffs;
         let (alpha_out, beta_out) = expected_coeffs;
 

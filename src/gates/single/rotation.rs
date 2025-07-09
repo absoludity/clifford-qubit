@@ -4,8 +4,7 @@
 //! rotate qubits around the respective axes of the Bloch sphere by a given angle theta.
 //!
 //! The explanations and tests here use the non-rotor complex coordinates so
-//! that we can verify it's the same as the matrix operations. I'd like to add
-//! separate tests demonstrating what's actually happening with a rotor too.
+//! that we can verify it's the same as the matrix operations.
 
 use clifford_3_even::Rotor;
 
@@ -89,6 +88,7 @@ pub fn rz(qubit: &mut Qubit, theta: f64) -> &mut Qubit {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::gates::test_helpers::assert_matrix_result;
     use num::complex::Complex64;
     use num::complex::ComplexFloat;
     use rstest::rstest;
@@ -133,23 +133,12 @@ mod tests {
         let (alpha_in, beta_in) = input_coeffs;
         let (alpha_out, beta_out) = expected_coeffs;
 
+        assert_matrix_result(input_coeffs, expected_coeffs, || {
+            crate::gates::matrix_operations::rx(theta)
+        });
+
         let mut qubit = Qubit::new(alpha_in, beta_in).unwrap();
         let _ = rx(&mut qubit, theta);
-
-        let (result_alpha, result_beta) = qubit.complex_coefficients();
-
-        assert!(
-            (result_alpha - alpha_out).abs() < 1e-10,
-            "Alpha mismatch: expected {}, got {}",
-            alpha_out,
-            result_alpha
-        );
-        assert!(
-            (result_beta - beta_out).abs() < 1e-10,
-            "Beta mismatch: expected {}, got {}",
-            beta_out,
-            result_beta
-        );
 
         // Create the expected output qubit
         let expected = Qubit::new(alpha_out, beta_out).unwrap();
@@ -199,6 +188,10 @@ mod tests {
     ) {
         let (alpha_in, beta_in) = input_coeffs;
         let (alpha_out, beta_out) = expected_coeffs;
+
+        assert_matrix_result(input_coeffs, expected_coeffs, || {
+            crate::gates::matrix_operations::ry(theta)
+        });
 
         let mut qubit = Qubit::new(alpha_in, beta_in).unwrap();
         let _ = ry(&mut qubit, theta);
@@ -266,6 +259,10 @@ mod tests {
     ) {
         let (alpha_in, beta_in) = input_coeffs;
         let (alpha_out, beta_out) = expected_coeffs;
+
+        assert_matrix_result(input_coeffs, expected_coeffs, || {
+            crate::gates::matrix_operations::rz(theta)
+        });
 
         let mut qubit = Qubit::new(alpha_in, beta_in).unwrap();
         let _ = rz(&mut qubit, theta);
