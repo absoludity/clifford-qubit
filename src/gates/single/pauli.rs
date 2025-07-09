@@ -204,8 +204,7 @@ pub fn z(qubit: &mut Qubit) -> &mut Qubit {
 mod tests {
     use super::*;
     use crate::gates::matrix_testing::assert_matrix_result;
-    use num::complex::Complex64;
-    use num::complex::ComplexFloat;
+    use num::complex::{Complex64, ComplexFloat};
     use rstest::rstest;
     use std::f64::consts::FRAC_1_SQRT_2;
 
@@ -250,7 +249,6 @@ mod tests {
         let _ = x(&mut qubit);
 
         let (result_alpha, result_beta) = qubit.complex_coefficients();
-
         assert!(
             (result_alpha - alpha_out).abs() < 1e-10,
             "Alpha mismatch: expected {}, got {}",
@@ -307,13 +305,9 @@ mod tests {
         let (alpha_out, beta_out) = expected_coeffs;
 
         let mut qubit = Qubit::new(alpha_in, beta_in).unwrap();
-        println!("initial qubit: {}", qubit.rotor);
         let _ = y(&mut qubit);
 
         let (result_alpha, result_beta) = qubit.complex_coefficients();
-
-        println!("resulting qubit: {}", qubit.rotor);
-
         assert!(
             (result_alpha - alpha_out).abs() < 1e-10,
             "Alpha mismatch: expected {}, got {}",
@@ -370,7 +364,6 @@ mod tests {
         let _ = z(&mut qubit);
 
         let (result_alpha, result_beta) = qubit.complex_coefficients();
-
         assert!(
             (result_alpha - alpha_out).abs() < 1e-10,
             "Alpha mismatch: expected {}, got {}",

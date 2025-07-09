@@ -32,8 +32,8 @@ pub fn hadamard(qubit: &mut Qubit) -> &mut Qubit {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use num::complex::Complex64;
-    use num::complex::ComplexFloat;
+    use crate::gates::matrix_testing::assert_matrix_result;
+    use num::complex::{Complex64, ComplexFloat};
     use rstest::rstest;
     use std::f64::consts::FRAC_1_SQRT_2;
 
@@ -68,6 +68,10 @@ mod tests {
     ) {
         let (alpha_in, beta_in) = input_coeffs;
         let (alpha_out, beta_out) = expected_coeffs;
+
+        assert_matrix_result(input_coeffs, expected_coeffs, || {
+            crate::gates::matrix_testing::h()
+        });
 
         let mut qubit = Qubit::new(alpha_in, beta_in).unwrap();
         let _ = hadamard(&mut qubit);
