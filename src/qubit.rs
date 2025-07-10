@@ -2,6 +2,7 @@
 
 use clifford_3_even::Rotor;
 use num::complex::Complex64;
+use num::{One, Zero};
 
 use crate::error::QubitError;
 
@@ -160,6 +161,16 @@ impl Qubit {
     pub fn z(&mut self) -> &mut Self {
         crate::gates::single::pauli::z(self)
     }
+
+    /// Creates a qubit representing the zero state
+    pub fn zero() -> Self {
+        Qubit::new(Complex64::one(), Complex64::zero()).unwrap()
+    }
+
+    /// Creates a qubit representing the one state
+    pub fn one() -> Self {
+        Qubit::new(Complex64::zero(), Complex64::one()).unwrap()
+    }
 }
 
 #[cfg(test)]
@@ -295,5 +306,25 @@ mod tests {
         } else {
             panic!("Expected NotNormalized error");
         }
+    }
+
+    #[test]
+    fn test_zero() {
+        let qubit = Qubit::zero();
+        let (alpha, beta) = qubit.complex_coefficients();
+
+        // Zero state should be |0⟩ = (1, 0)
+        assert!((alpha - Complex64::new(1.0, 0.0)).norm() < 1e-10);
+        assert!((beta - Complex64::new(0.0, 0.0)).norm() < 1e-10);
+    }
+
+    #[test]
+    fn test_one() {
+        let qubit = Qubit::one();
+        let (alpha, beta) = qubit.complex_coefficients();
+
+        // One state should be |1⟩ = (0, 1)
+        assert!((alpha - Complex64::new(0.0, 0.0)).norm() < 1e-10);
+        assert!((beta - Complex64::new(1.0, 0.0)).norm() < 1e-10);
     }
 }
