@@ -1,5 +1,7 @@
 //! Implementation of a quantum bit (qubit) using Clifford algebra.
 
+use std::f64::consts::FRAC_1_SQRT_2;
+
 use clifford_3_even::Rotor;
 use num::complex::Complex64;
 use num::{One, Zero};
@@ -170,6 +172,24 @@ impl Qubit {
     /// Creates a qubit representing the one state
     pub fn one() -> Self {
         Qubit::new(Complex64::zero(), Complex64::one()).unwrap()
+    }
+
+    /// Creates a qubit representing the plus state
+    pub fn plus() -> Self {
+        Qubit::new(
+            Complex64::new(FRAC_1_SQRT_2, 0.0),
+            Complex64::new(FRAC_1_SQRT_2, 0.0),
+        )
+        .unwrap()
+    }
+
+    /// Creates a qubit representing the minus state
+    pub fn minus() -> Self {
+        Qubit::new(
+            Complex64::new(FRAC_1_SQRT_2, 0.0),
+            Complex64::new(-FRAC_1_SQRT_2, 0.0),
+        )
+        .unwrap()
     }
 }
 
