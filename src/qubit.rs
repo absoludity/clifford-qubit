@@ -1,6 +1,7 @@
 //! Implementation of a quantum bit (qubit) using Clifford algebra.
 
 use std::f64::consts::FRAC_1_SQRT_2;
+use std::ops::Neg;
 
 use clifford_3_even::Rotor;
 use num::complex::Complex64;
@@ -176,6 +177,10 @@ impl Qubit {
         crate::gates::single::hadamard(self)
     }
 
+    pub fn rz(&mut self, theta: f64) -> &mut Self {
+        crate::gates::single::rz(self, theta)
+    }
+
     /// Creates a qubit representing the zero state
     pub fn zero() -> Self {
         Qubit::new(Complex64::one(), Complex64::zero()).unwrap()
@@ -262,6 +267,57 @@ impl Qubit {
     /// A rotor representing the projection of the qubit onto the -1 eigenstate of X
     pub fn project_x_minus(&self) -> Rotor {
         0.5f64 * (self.rotor - crate::gates::single::pauli::x(&mut self.clone()).rotor)
+    }
+}
+
+impl Neg for Qubit {
+    type Output = Self;
+
+    /// Implements the unary minus operator for Qubit.
+    ///
+    /// This negates the qubit state, transforming |ψ⟩ = α|0⟩ + β|1⟩ into -|ψ⟩ = -α|0⟩ - β|1⟩.
+    /// The operation negates all rotor coefficients to achieve this transformation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use clifford_qubit::Qubit;
+    /// use num::complex::Complex64;
+    ///
+    /// let qubit = Qubit::new(Complex64::new(0.6, 0.0), Complex64::new(0.8, 0.0)).unwrap();
+    /// let negated = -qubit;
+    /// let (alpha, beta) = negated.complex_coefficients();
+    /// assert_eq!(alpha, Complex64::new(-0.6, 0.0));
+    /// assert_eq!(beta, Complex64::new(-0.8, 0.0));
+    /// ```
+    fn neg(self) -> Self::Output {
+        // TODO: it'd be better to implement this on Rotor and just call Neg on that.
+        Self {
+            rotor: Rotor::new(
+                -self.rotor.scalar,
+                -self.rotor.ix,
+                -self.rotor.iy,
+                -self.rotor.iz,
+            ),
+        }
+    }
+}
+
+impl Neg for &Qubit {
+    type Output = Qubit;
+
+    /// Implements the unary minus operator for &Qubit.
+    ///
+    /// This allows negating a qubit by reference without consuming the original.
+    fn neg(self) -> Self::Output {
+        Qubit {
+            rotor: Rotor::new(
+                -self.rotor.scalar,
+                -self.rotor.ix,
+                -self.rotor.iy,
+                -self.rotor.iz,
+            ),
+        }
     }
 }
 
